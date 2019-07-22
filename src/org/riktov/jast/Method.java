@@ -5,6 +5,8 @@ package org.riktov.jast;
  * @author riktov@freeshell.org (Paul Richter)
  *
  */
+
+
 abstract class Method {
 	public SmalltalkObject apply(SmalltalkObject receiver, SmalltalkObject[] argVals) { 
 		return StringObject.make("[unimplemented] Method.apply()") ; 

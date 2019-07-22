@@ -20,7 +20,7 @@ public class SmalltalkReader {
 		this(new BufferedReader(new StringReader(s))) ;
 	}
 	
-	public SmalltalkObject read(String sExp) {
+	public Evaluable read(String sExp) {
 		Reader r = new BufferedReader(new StringReader(sExp));
 		tokenizer = new SmalltalkStreamTokenizer(r);
 		try {
@@ -32,16 +32,40 @@ public class SmalltalkReader {
 		}
 	}
 	
-	public SmalltalkObject read() throws IOException  {
+	public Evaluable read() throws IOException  {
 		while (tokenizer.nextToken() != StreamTokenizer.TT_EOF) {
 			this.can_continue_reading = true ;
 			//System.out.println(tokenizer.sval);
 
-			if (tokenizer.ttype == '(') {
-				return readList() ;
-			} else if (tokenizer.ttype == StreamTokenizer.TT_WORD) {
+			switch(tokenizer.ttype) {
+			case '(':
+				return readCompound() ;
+			case StreamTokenizer.TT_WORD:
+				System.out.println("Read a word: " + tokenizer.sval) ;
+				
+				/**
+				 * We parse numbers ourselves instead of using StreamTokenizer's
+				 * number parsing, because it will read an end-of-statement period as a decimal point.
+				 * 5.3 -> 5.3
+				 * 5. 3 -> 3
+				 * 
+				 */
+				/*
+				Atom a ; 
+
+				try {
+					a = parseNumber(tokenizer.sval);
+				} catch (NumberFormatException e) {
+					a = new SymbolAtom(tokenizer.sval);
+				}
+				return a ;
+				*/
+				
 				return PrimitiveObject.make(tokenizer.sval) ;
-			} 
+			case StreamTokenizer.TT_NUMBER:
+				System.out.println("Read a number. " + tokenizer.nval) ;
+				return PrimitiveObject.make((int)tokenizer.nval) ;				
+			}			
 		}	//end of while loop, exited by no more input
 		this.can_continue_reading = false ;
 		return null ;
@@ -52,8 +76,8 @@ public class SmalltalkReader {
 	 * @return the read SmalltalkObject
 	 * @throws IOException
 	 */
-	public SmalltalkObject readList() throws SmalltalkReaderException, IOException {
-		ArrayList<SmalltalkObject> items = new ArrayList<SmalltalkObject>() ;
+	public CompoundExpression readCompound() throws SmalltalkReaderException, IOException {
+		ArrayList<Evaluable> items = new ArrayList<Evaluable>() ;
 
 		//System.out.println("Starting reading list") ;
 		while (tokenizer.nextToken() != StreamTokenizer.TT_EOF) {
@@ -68,19 +92,10 @@ public class SmalltalkReader {
 				case 1:
 					return arr[0] ;
 				default:
-
-				}
-				
-				if(arr.length == 0) {
-					return PrimitiveObject.make("Expression expected") ;
-				} else if(arr.length == 1) {
-					return arr[0] ;
-				} else {
-					//test assume 
 					SmalltalkObject receiver = arr[0] ;
 					Selector sel = new Selector(arr[1].toString()) ;
-					return PrimitiveObject.make("A list:" + arr) ;
-				}
+					return new CompoundExpression() ;
+				}				
 			} else {
 				tokenizer.pushBack();
 				items.add(read()) ;
@@ -90,7 +105,14 @@ public class SmalltalkReader {
 		throw new IOException() ;
 	}
 
-	
+	public static SmalltalkObject parseNumber(String st) {
+		try {
+			return PrimitiveObject.make(Integer.valueOf(st));
+		} catch (NumberFormatException e) {
+			return PrimitiveObject.make("[unimplemented] New float") ;
+//			return PrimitiveObject.make(Float.valueOf(st));
+		}
+	}
 }
 
 class SmalltalkStreamTokenizer extends StreamTokenizer {
@@ -101,7 +123,7 @@ class SmalltalkStreamTokenizer extends StreamTokenizer {
 	
 	void initializeSyntax() {
 		whitespaceChars(' ', ' ');
-		commentChar(';');
+		//commentChar(';');
 
 		resetSyntax();
 		whitespaceChars(' ', ' ');
@@ -113,12 +135,12 @@ class SmalltalkStreamTokenizer extends StreamTokenizer {
 //		wordChars('.', '.');
 		wordChars('!', '!');
 		wordChars('*', '*');	//examples: LET*
-		wordChars('-', '-');	//examples: VARIABLE-WITH-HYPHENS
+//		wordChars('-', '-');	//examples: VARIABLE-WITH-HYPHENS
 		wordChars('<', '?');	// <=>? examples: STR->LIS
 		wordChars(';', ';');	//handle lines that start with?? ;
 		//ordinaryChar('+');
 		quoteChar('\'');
-		// st.parseNumbers() ;
+		//parseNumbers() ;
 		// st.ordinaryChars('0', '9') ;
 		//commentChar(';') ;
 	}

@@ -4,12 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * The Evaluable interface allows objects to be evaluated.
+ * 
+ * SmalltalkObjects are Evaluable, but so are CompoundExpressions, which are not SmalltalkObjects
+ * @author Paul RICHTER &lt;riktov@freeshell.org&gt;
+ *
+ */
+interface Evaluable {
+	public SmalltalkObject evaluate(Environment env) ;
+}
+
+/**
  * A Smalltalk object
  * 
  * @author riktov@freeshell.org (Paul Richter)
  *
  */
-class SmalltalkObject {
+class SmalltalkObject implements Evaluable {
 	SmalltalkClassObject classObject ;
 	HashMap<String, SmalltalkObject> instanceVariables = new HashMap<String, SmalltalkObject>();
 //	String name = "[unimplemented] String representation of an Object." ;
@@ -42,6 +53,11 @@ class SmalltalkObject {
 
 	/* super is the parent of this object's class object */
 	public SmalltalkObject stSuper() { return this.stClass().getParentClass() ; }
+
+	@Override
+	public SmalltalkObject evaluate(Environment env) {
+		return this;
+	}
 }
 
 /**
@@ -171,4 +187,6 @@ class MethodDictionary /* extends SmalltalkObject */
 	private HashMap<String, Method> dict = new HashMap<String, Method>() ;
 	HashMap<String, Method> getDict() { return dict ;}
 }
+
+
 

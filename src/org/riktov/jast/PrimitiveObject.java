@@ -44,6 +44,16 @@ class NumberClassObject extends PrimitiveClassObject {
 }
 
 class IntegerClassObject extends NumberClassObject {
+	//This is a singleton
+	private static IntegerClassObject INSTANCE ;
+	public static IntegerClassObject getInstance() {
+		if(IntegerClassObject.INSTANCE == null) {
+			INSTANCE = new IntegerClassObject() ;
+		}
+		return INSTANCE ;
+	}
+	@Override public String toString() { return "Integer" ;}
+
 	@Override
 	public void initializeMethods() {
 		//defineInstanceMethod(new Selector("increment"), new IntegerIncrementMethod()) ; 
@@ -65,16 +75,7 @@ class IntegerClassObject extends NumberClassObject {
 				return PrimitiveObject.make(recVal + argVal) ;
 			}
 		}) ;
-	}
-	
-	private static IntegerClassObject INSTANCE ;
-	public static IntegerClassObject getInstance() {
-		if(IntegerClassObject.INSTANCE == null) {
-			INSTANCE = new IntegerClassObject() ;
-		}
-		return INSTANCE ;
-	}
-	@Override public String toString() { return "Integer" ;}
+	}	
 }
 
 class IntegerObject extends PrimitiveObject {
