@@ -33,7 +33,7 @@ class CreateInstanceTest {
 	@Test
 	void shouldCreateInstanceObject() {
 		SmalltalkClassObject stco_Object = (SmalltalkClassObject) env.get("Object") ;
-		SmalltalkObject instance = stco_Object.createInstance() ;
+		SmalltalkObject instance = SmalltalkClassObje ;
 		assertEquals("a Object", instance.toString().substring(0, "a Object".length())) ;
 //		assertEquals("A Object", instance.toString()) ;
 	}
